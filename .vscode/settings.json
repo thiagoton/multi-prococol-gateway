@@ -1,0 +1,12 @@
+{
+    "C_Cpp.clang_format_fallbackStyle": "WebKit",
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "C_Cpp.clang_format_sortIncludes": true,
+    "C_Cpp.clang_format_style": "WebKit",
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "C_Cpp.clang_format_path": "/usr/bin/clang-format",
+    "C_Cpp.formatting": "vcFormat",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-x64"
+}
