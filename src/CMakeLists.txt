@@ -9,7 +9,8 @@ target_include_directories(gateway
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(gateway
         PRIVATE
-            transport/linux/serial.cpp)
+            transport/linux/serial.cpp
+            transport/linux/socket.cpp)
 else()
     message(FATAL_ERROR "No transport implementation is available for ${CMAKE_SYSTEM_NAME}")
 endif()
