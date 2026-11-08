@@ -80,10 +80,8 @@ public:
      */
     std::size_t send(const Packet& packet) override;
 
-private:
-    Config config_;
-
 protected:
+    Config config_;
     struct SerialHandle;
     std::unique_ptr<SerialHandle> handle_;
 };

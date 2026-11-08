@@ -73,10 +73,8 @@ public:
      */
     std::size_t send(const Packet& packet) override;
 
-private:
-    Config config_;
-
 protected:
+    Config config_;
     // holds OS specific data
     struct SocketHandle;
     std::unique_ptr<SocketHandle> handle_;
