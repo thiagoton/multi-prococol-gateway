@@ -87,4 +87,3 @@ protected:
     struct SerialHandle;
     std::unique_ptr<SerialHandle> handle_;
 };
-

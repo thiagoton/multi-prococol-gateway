@@ -73,7 +73,7 @@ struct Serial::SerialHandle {
 
 // Allocate the opaque handle; the port stays closed until open() succeeds.
 Serial::Serial()
-    : Serial(Config{})
+    : Serial(Config {})
 {
 }
 

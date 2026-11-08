@@ -77,7 +77,8 @@ std::size_t receiveDatagram(int fd, Packet& packet, int maxSize, int timeoutMs)
     char service[NI_MAXSERV];
     if (::getnameinfo(reinterpret_cast<struct sockaddr*>(&from), fromLength,
             host, sizeof(host), service, sizeof(service),
-            NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+            NI_NUMERICHOST | NI_NUMERICSERV)
+        == 0) {
         packet.peer.host = host;
         packet.peer.port = service;
     }
@@ -93,7 +94,7 @@ struct Socket::SocketHandle {
 };
 
 Socket::Socket()
-    : Socket(Config{})
+    : Socket(Config {})
 {
 }
 
