@@ -179,8 +179,10 @@ bool Serial::isOpen() const
 }
 
 // Read from the port into buffer according to maxSize and timeoutMs.
-std::size_t Serial::read(std::vector<std::uint8_t>& buffer, int maxSize, int timeoutMs)
+std::size_t Serial::receive(Packet& packet, int maxSize, int timeoutMs)
 {
+    auto& buffer = packet.data;
+
     // Nothing to read when the port is not open.
     if (!isOpen())
         return 0;
@@ -268,8 +270,10 @@ std::size_t Serial::read(std::vector<std::uint8_t>& buffer, int maxSize, int tim
 }
 
 // Write the entire buffer, handling partial writes and interruptions.
-std::size_t Serial::write(std::vector<std::uint8_t>& buffer)
+std::size_t Serial::send(const Packet& packet)
 {
+    const auto& buffer = packet.data;
+
     if (!isOpen() || buffer.empty())
         return 0;
 

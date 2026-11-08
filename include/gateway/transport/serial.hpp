@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "gateway/transport/transport.hpp"
+
 class Serial {
 public:
     enum Parity {
@@ -57,30 +59,32 @@ public:
     bool isOpen() const;
 
     /**
-     * Reads data from the serial port into the provided buffer.
-     * The buffer is treated as an output parameter and is replaced with the
-     * bytes actually read.
+     * Receives data from the serial port into packet.data. The packet data is
+     * replaced with the bytes actually received.
      *
-     * @param buffer The buffer to store the read data.
-     * @param maxSize The maximum number of bytes to read. If negative, reads all
+     * @param packet The packet that receives the data.
+     * @param maxSize The maximum number of bytes to receive. If negative, receives all
      *                bytes currently available on the port (default: -1).
      * @param timeoutMs The maximum time in milliseconds to wait for maxSize bytes
      *                  when maxSize is positive. If zero or negative, waits
      *                  indefinitely (default: -1).
-     * @return The number of bytes actually read.
+     * @return The number of bytes actually received.
      */
-    std::size_t read(std::vector<std::uint8_t>& buffer, int maxSize = -1, int timeoutMs = -1);
+    std::size_t receive(Packet& packet, int maxSize = -1, int timeoutMs = -1);
 
     /**
-     * Writes data to the serial port from the provided buffer.
+     * Sends the packet data through the serial port.
      *
-     * @param buffer The buffer containing the data to write.
-     * @return The number of bytes actually written.
+     * @param packet The packet containing the data to send.
+     * @return The number of bytes actually sent.
      */
-    std::size_t write(std::vector<std::uint8_t>& buffer);
+    std::size_t send(const Packet& packet);
+
+private:
+    Config config_;
 
 protected:
-    Config config_;
     struct SerialHandle;
     std::unique_ptr<SerialHandle> handle_;
 };
+

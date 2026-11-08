@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
+
+#include "gateway/transport/transport.hpp"
 
 class Socket {
 public:
@@ -53,25 +54,29 @@ public:
     bool isOpen() const;
 
     /**
-     * Reads data from the socket into the provided buffer.
+     * Receives data from the socket into packet.data. For UDP, a single datagram
+     * is received and packet.peer is set to the sender. For TCP, bytes are read as a stream.
      *
-     * @param buffer The buffer to store the read data.
-     * @param maxSize The maximum number of bytes to read (default: -1 for all available data).
-     * @param timeoutMs The timeout in milliseconds used when maxSize > 0 (default: -1 for no timeout).
-     * @return The number of bytes actually read.
+     * @param packet The packet that receives the data and, for UDP, the sender endpoint.
+     * @param maxSize The maximum number of bytes to receive (default: -1 for all available data).
+     * @param timeoutMs The timeout in milliseconds (default: -1 for no timeout).
+     * @return The number of bytes actually received.
      */
-    std::size_t read(std::vector<std::uint8_t>& buffer, int maxSize = -1, int timeoutMs = -1);
+    std::size_t receive(Packet& packet, int maxSize = -1, int timeoutMs = -1);
 
     /**
-     * Writes data to the socket from the provided buffer.
+     * Sends the packet data through the socket. For UDP, the destination is the one
+     * configured by open().
      *
-     * @param buffer The buffer containing the data to write.
-     * @return The number of bytes actually written.
+     * @param packet The packet containing the data to send.
+     * @return The number of bytes actually sent.
      */
-    std::size_t write(std::vector<std::uint8_t>& buffer);
+    std::size_t send(const Packet& packet);
+
+private:
+    Config config_;
 
 protected:
-    Config config_;
     // holds OS specific data
     struct SocketHandle;
     std::unique_ptr<SocketHandle> handle_;

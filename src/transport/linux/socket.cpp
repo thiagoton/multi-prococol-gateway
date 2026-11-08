@@ -25,6 +25,66 @@ int transportProtocol(Socket::Protocol protocol)
     return protocol == Socket::Protocol::UDP ? IPPROTO_UDP : IPPROTO_TCP;
 }
 
+// Receives exactly one UDP datagram into packet.data and records its sender in packet.peer.
+// Returns the datagram size, or 0 on timeout, error, or maxSize == 0.
+// A datagram longer than maxSize is truncated and the excess bytes are discarded.
+std::size_t receiveDatagram(int fd, Packet& packet, int maxSize, int timeoutMs)
+{
+    // A zero-length request never consumes a datagram.
+    if (maxSize == 0)
+        return 0;
+
+    // Wait for the socket to become readable; a negative timeoutMs waits indefinitely.
+    struct pollfd pfd;
+    pfd.fd = fd;
+    pfd.events = POLLIN;
+    pfd.revents = 0;
+
+    int ready;
+    do {
+        ready = ::poll(&pfd, 1, timeoutMs);
+    } while (ready < 0 && errno == EINTR);
+
+    // Timeout or poll failure: no datagram was consumed.
+    if (ready <= 0 || !(pfd.revents & (POLLIN | POLLERR)))
+        return 0;
+
+    // Use the caller's limit if given; otherwise the maximum UDP payload size.
+    const std::size_t capacity = maxSize < 0 ? 65535 : static_cast<std::size_t>(maxSize);
+    packet.data.resize(capacity);
+
+    // Storage for the sender address, filled by recvfrom().
+    struct sockaddr_storage from;
+    socklen_t fromLength = sizeof(from);
+
+    // recvfrom() returns one whole datagram; retry only if interrupted by a signal.
+    ssize_t received;
+    do {
+        received = ::recvfrom(fd, packet.data.data(), capacity, 0,
+            reinterpret_cast<struct sockaddr*>(&from), &fromLength);
+    } while (received < 0 && errno == EINTR);
+
+    if (received < 0) {
+        packet.data.clear();
+        return 0;
+    }
+
+    // Shrink the buffer to the datagram size actually received.
+    packet.data.resize(static_cast<std::size_t>(received));
+
+    // Convert the sender address to numeric host and port strings.
+    char host[NI_MAXHOST];
+    char service[NI_MAXSERV];
+    if (::getnameinfo(reinterpret_cast<struct sockaddr*>(&from), fromLength,
+            host, sizeof(host), service, sizeof(service),
+            NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+        packet.peer.host = host;
+        packet.peer.port = service;
+    }
+
+    return static_cast<std::size_t>(received);
+}
+
 } // namespace
 
 // Holds the OS-specific state of the socket: the file descriptor only.
@@ -106,13 +166,16 @@ bool Socket::isOpen() const
     return handle_ && handle_->fd >= 0;
 }
 
-std::size_t Socket::read(std::vector<std::uint8_t>& buffer, int maxSize, int timeoutMs)
+std::size_t Socket::receive(Packet& packet, int maxSize, int timeoutMs)
 {
-    // A closed socket never yields data.
     if (!isOpen())
         return 0;
 
+    auto& buffer = packet.data;
     buffer.clear();
+
+    if (config_.protocol == Protocol::UDP)
+        return receiveDatagram(handle_->fd, packet, maxSize, timeoutMs);
 
     // Determine how many bytes to read: either everything currently available
     // (maxSize < 0) or at most maxSize bytes.
@@ -192,8 +255,10 @@ std::size_t Socket::read(std::vector<std::uint8_t>& buffer, int maxSize, int tim
     return total;
 }
 
-std::size_t Socket::write(std::vector<std::uint8_t>& buffer)
+std::size_t Socket::send(const Packet& packet)
 {
+    const auto& buffer = packet.data;
+
     // Nothing to send on a closed socket or with an empty buffer.
     if (!isOpen() || buffer.empty())
         return 0;
