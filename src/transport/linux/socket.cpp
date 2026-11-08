@@ -97,8 +97,8 @@ Socket::Socket()
 {
 }
 
-Socket::Socket(Config config)
-    : config_(std::move(config))
+Socket::Socket(const Config& config)
+    : config_(config)
     , handle_(std::make_unique<SocketHandle>())
 {
 }

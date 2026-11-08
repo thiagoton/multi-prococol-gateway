@@ -31,7 +31,7 @@ public:
      * Constructs a closed serial port object.
      */
     Serial();
-    explicit Serial(Config config);
+    explicit Serial(const Config& config);
 
     /**
      * Closes the port if it is still open and releases the OS handle.

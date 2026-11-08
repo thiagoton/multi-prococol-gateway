@@ -29,7 +29,7 @@ public:
      *
      * @param config The host, port and protocol used by open().
      */
-    explicit Socket(Config config);
+    explicit Socket(const Config& config);
     ~Socket();
 
     /**

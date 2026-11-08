@@ -77,8 +77,8 @@ Serial::Serial()
 {
 }
 
-Serial::Serial(Config config)
-    : config_(std::move(config))
+Serial::Serial(const Config& config)
+    : config_(config)
     , handle_(std::make_unique<SerialHandle>())
 {
 }
