@@ -7,25 +7,38 @@
 
 class Socket {
 public:
-    Socket();
-    ~Socket();
-
     enum Protocol {
         TCP = 0,
         UDP,
     };
 
+    struct Config {
+        std::string host;
+        std::string port;
+        Protocol protocol = Protocol::TCP;
+    };
+
     /**
-     * Opens the socket to a desired host on a given port. For UDP, it sets 
-     * destination to send datagrams, so it always succeeds. 
+     * Constructs a closed socket object.
+     */
+    Socket();
+
+    /**
+     * Constructs a closed socket object with the given configuration.
+     *
+     * @param config The host, port and protocol used by open().
+     */
+    explicit Socket(Config config);
+    ~Socket();
+
+    /**
+     * Opens the socket to the configured host and port. For UDP, it sets
+     * destination to send datagrams, so it always succeeds.
      * For TCP, it effectively connects to the host, so if connection fails, it returns false.
      *
-     * @param host The hostname or IP address to connect to (e.g., "localhost" or "127.0.0.1").
-     * @param port The port number to connect to (e.g., "8080").
-     * @param protocol The network protocol to use (TCP or UDP).
      * @return True if the socket was successfully opened, false otherwise.
      */
-    bool open(const std::string& host, const std::string& port, Protocol protocol = Protocol::TCP);
+    bool open();
 
     /**
      * Closes the socket and releases all resources.
@@ -58,6 +71,7 @@ public:
     std::size_t write(std::vector<std::uint8_t>& buffer);
 
 protected:
+    Config config_;
     // holds OS specific data
     struct SocketHandle;
     std::unique_ptr<SocketHandle> handle_;

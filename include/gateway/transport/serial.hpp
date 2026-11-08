@@ -18,10 +18,18 @@ public:
         TWO,
     };
 
+    struct Config {
+        std::string port;
+        unsigned int baudRate = 9600;
+        Parity parity = Parity::NONE;
+        StopBits stopBits = StopBits::ONE;
+    };
+
     /**
      * Constructs a closed serial port object.
      */
     Serial();
+    explicit Serial(Config config);
 
     /**
      * Closes the port if it is still open and releases the OS handle.
@@ -29,15 +37,11 @@ public:
     ~Serial();
 
     /**
-     * Opens the serial port with the specified configuration.
-     * 
-     * @param port The port name (e.g., COM3 on Windows or /dev/ttyUSB0 on Unix).
-     * @param baudRate The baud rate for communication.
-     * @param parity The parity mode (default: NONE).
-     * @param stopBits The number of stop bits (default: ONE).
+     * Opens the serial port using its configured settings.
+     *
      * @return True if the port was successfully opened, false otherwise.
      */
-    bool open(const std::string& port, unsigned int baudRate, Parity parity = Parity::NONE, StopBits stopBits = StopBits::ONE);
+    bool open();
 
     /**
      * Closes the serial port and releases the underlying OS handle.
@@ -66,7 +70,7 @@ public:
      * @return The number of bytes actually read.
      */
     std::size_t read(std::vector<std::uint8_t>& buffer, int maxSize = -1, int timeoutMs = -1);
-    
+
     /**
      * Writes data to the serial port from the provided buffer.
      *
@@ -76,6 +80,7 @@ public:
     std::size_t write(std::vector<std::uint8_t>& buffer);
 
 protected:
+    Config config_;
     struct SerialHandle;
     std::unique_ptr<SerialHandle> handle_;
 };

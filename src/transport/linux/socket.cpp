@@ -33,7 +33,13 @@ struct Socket::SocketHandle {
 };
 
 Socket::Socket()
-    : handle_(std::make_unique<SocketHandle>())
+    : Socket(Config{})
+{
+}
+
+Socket::Socket(Config config)
+    : config_(std::move(config))
+    , handle_(std::make_unique<SocketHandle>())
 {
 }
 
@@ -43,7 +49,7 @@ Socket::~Socket()
     close();
 }
 
-bool Socket::open(const std::string& host, const std::string& port, Protocol protocol)
+bool Socket::open()
 {
     // Drop any previous connection before opening a new one.
     close();
@@ -52,11 +58,11 @@ bool Socket::open(const std::string& host, const std::string& port, Protocol pro
     struct addrinfo hints;
     std::memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = socketType(protocol);
-    hints.ai_protocol = transportProtocol(protocol);
+    hints.ai_socktype = socketType(config_.protocol);
+    hints.ai_protocol = transportProtocol(config_.protocol);
 
     struct addrinfo* results = nullptr;
-    if (::getaddrinfo(host.c_str(), port.c_str(), &hints, &results) != 0)
+    if (::getaddrinfo(config_.host.c_str(), config_.port.c_str(), &hints, &results) != 0)
         return false;
 
     // Try each resolved address until one socket can be created and connected.

@@ -5,6 +5,7 @@
 #include <cerrno>
 #include <chrono>
 #include <cstring>
+#include <utility>
 
 // POSIX/Linux serial port primitives.
 #include <fcntl.h>
@@ -72,7 +73,13 @@ struct Serial::SerialHandle {
 
 // Allocate the opaque handle; the port stays closed until open() succeeds.
 Serial::Serial()
-    : handle_(std::make_unique<SerialHandle>())
+    : Serial(Config{})
+{
+}
+
+Serial::Serial(Config config)
+    : config_(std::move(config))
+    , handle_(std::make_unique<SerialHandle>())
 {
 }
 
@@ -83,18 +90,15 @@ Serial::~Serial()
 }
 
 // Open and configure a tty device with the requested line settings.
-bool Serial::open(const std::string& port, unsigned int baudRate, Parity parity, StopBits stopBits)
+bool Serial::open()
 {
-    // Drop any previously opened port before reconfiguring.
     close();
 
-    // Resolve the requested baud rate before touching the device.
     speed_t speed = B9600;
-    if (!toSpeed(baudRate, speed))
+    if (!toSpeed(config_.baudRate, speed))
         return false;
 
-    // Open non-controlling and blocking; reads use poll() for timeout control.
-    int fd = ::open(port.c_str(), O_RDWR | O_NOCTTY);
+    int fd = ::open(config_.port.c_str(), O_RDWR | O_NOCTTY);
     if (fd < 0)
         return false;
 
@@ -120,7 +124,7 @@ bool Serial::open(const std::string& port, unsigned int baudRate, Parity parity,
     tty.c_cflag |= CS8;
 
     // Configure parity: disabled, odd, or even.
-    switch (parity) {
+    switch (config_.parity) {
     case Parity::NONE:
         tty.c_cflag &= ~PARENB;
         break;
@@ -135,7 +139,7 @@ bool Serial::open(const std::string& port, unsigned int baudRate, Parity parity,
     }
 
     // Configure one or two stop bits.
-    if (stopBits == StopBits::TWO)
+    if (config_.stopBits == StopBits::TWO)
         tty.c_cflag |= CSTOPB;
     else
         tty.c_cflag &= ~CSTOPB;
