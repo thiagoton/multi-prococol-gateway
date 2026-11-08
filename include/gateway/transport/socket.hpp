@@ -6,7 +6,7 @@
 
 #include "gateway/transport/transport.hpp"
 
-class Socket {
+class Socket : public ITransport {
 public:
     enum Protocol {
         TCP = 0,
@@ -39,19 +39,19 @@ public:
      *
      * @return True if the socket was successfully opened, false otherwise.
      */
-    bool open();
+    bool open() override;
 
     /**
      * Closes the socket and releases all resources.
      */
-    void close();
+    void close() override;
 
     /**
      * Returns true if the socket is currently opened.
      *
      * @return True if the socket is open, false otherwise.
      */
-    bool isOpen() const;
+    bool isOpen() const override;
 
     /**
      * Receives data from the socket into packet.data. For UDP, a single datagram
@@ -62,7 +62,7 @@ public:
      * @param timeoutMs The timeout in milliseconds (default: -1 for no timeout).
      * @return The number of bytes actually received.
      */
-    std::size_t receive(Packet& packet, int maxSize = -1, int timeoutMs = -1);
+    std::size_t receive(Packet& packet, int maxSize = -1, int timeoutMs = -1) override;
 
     /**
      * Sends the packet data through the socket. For UDP, the destination is the one
@@ -71,7 +71,7 @@ public:
      * @param packet The packet containing the data to send.
      * @return The number of bytes actually sent.
      */
-    std::size_t send(const Packet& packet);
+    std::size_t send(const Packet& packet) override;
 
 private:
     Config config_;

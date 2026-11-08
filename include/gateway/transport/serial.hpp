@@ -7,7 +7,7 @@
 
 #include "gateway/transport/transport.hpp"
 
-class Serial {
+class Serial : public ITransport {
 public:
     enum Parity {
         NONE = 0,
@@ -43,20 +43,20 @@ public:
      *
      * @return True if the port was successfully opened, false otherwise.
      */
-    bool open();
+    bool open() override;
 
     /**
      * Closes the serial port and releases the underlying OS handle.
      * Calling close() on an already closed port has no effect.
      */
-    void close();
+    void close() override;
 
     /**
      * Returns true if the serial port is currently opened.
      *
      * @return True if the port is open, false otherwise.
      */
-    bool isOpen() const;
+    bool isOpen() const override;
 
     /**
      * Receives data from the serial port into packet.data. The packet data is
@@ -70,7 +70,7 @@ public:
      *                  indefinitely (default: -1).
      * @return The number of bytes actually received.
      */
-    std::size_t receive(Packet& packet, int maxSize = -1, int timeoutMs = -1);
+    std::size_t receive(Packet& packet, int maxSize = -1, int timeoutMs = -1) override;
 
     /**
      * Sends the packet data through the serial port.
@@ -78,7 +78,7 @@ public:
      * @param packet The packet containing the data to send.
      * @return The number of bytes actually sent.
      */
-    std::size_t send(const Packet& packet);
+    std::size_t send(const Packet& packet) override;
 
 private:
     Config config_;
