@@ -23,10 +23,14 @@ add_executable(gateway_tests
     test_serial.cpp
     test_socket.cpp)
 
+target_include_directories(gateway_tests
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries(gateway_tests
     PRIVATE
         gateway::gateway
         ${GATEWAY_GTEST_MAIN_TARGET})
 
 include(GoogleTest)
-gtest_discover_tests(gateway_tests)
+gtest_discover_tests(gateway_tests PROPERTIES TIMEOUT 20)
