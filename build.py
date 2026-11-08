@@ -66,6 +66,7 @@ def main():
                 "-B",
                 str(BUILD_DIR),
                 "-DCMAKE_BUILD_TYPE=" + BUILD_TYPES[args.build_type],
+                "-DBUILD_TESTING=ON",
             ]
         )
 

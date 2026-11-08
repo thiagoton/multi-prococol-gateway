@@ -15,8 +15,14 @@ endif()
 
 option(GATEWAY_BUILD_APPS "Build gateway applications" ON)
 
+include(CTest)
+
 add_subdirectory(src)
 
 if(GATEWAY_BUILD_APPS)
     add_subdirectory(apps)
+endif()
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
 endif()
